@@ -1,4 +1,5 @@
 import type { PDFDocument, PDFFont, PDFPage } from "pdf-lib";
+import { rgb } from "pdf-lib";
 import type { FieldSchema, PdfBinding } from "../../types/schema";
 import type { FormFieldValue, LocationValue } from "../../types/formData";
 import type { HandwrittenSignature } from "../../types/signature";
@@ -6,6 +7,35 @@ import { drawFittedText } from "./fitText";
 import { drawSelectionCircle } from "./checkmarkOverlay";
 import { formatIsoDateToDisplay, splitIsoDate, splitTime } from "../../utils/dateFormat";
 import { computeFittingFontSize, truncateToWidth } from "../../utils/text";
+import { fetchTilePng, latLngToTile } from "./staticMap";
+
+const MAP_ZOOM = 17;
+
+/** Draws a 2-tile-wide OSM map snapshot (no third-party "static map" service involved —
+ * see staticMap.ts for why) into `binding`'s box, with a marker dot at the exact point.
+ * Best-effort: any failure (offline, tile server unreachable) just leaves the box blank
+ * rather than breaking the rest of the PDF. */
+async function drawLocationMap(page: PDFPage, outDoc: PDFDocument, loc: LocationValue, binding: PdfBinding) {
+  if (loc.lat === undefined || loc.lng === undefined) return;
+  const { tileX, tileY, fracX, fracY } = latLngToTile(loc.lat, loc.lng, MAP_ZOOM);
+  const [leftBytes, rightBytes] = await Promise.all([
+    fetchTilePng(MAP_ZOOM, tileX, tileY),
+    fetchTilePng(MAP_ZOOM, tileX + 1, tileY),
+  ]);
+  if (!leftBytes || !rightBytes) return;
+
+  const boxWidth = binding.maxWidth ?? 140;
+  const boxHeight = binding.maxHeight ?? 65;
+  const tileDrawWidth = boxWidth / 2;
+
+  const [leftImage, rightImage] = await Promise.all([outDoc.embedPng(leftBytes), outDoc.embedPng(rightBytes)]);
+  page.drawImage(leftImage, { x: binding.x, y: binding.y, width: tileDrawWidth, height: boxHeight });
+  page.drawImage(rightImage, { x: binding.x + tileDrawWidth, y: binding.y, width: tileDrawWidth, height: boxHeight });
+
+  const markerX = binding.x + fracX * tileDrawWidth;
+  const markerY = binding.y + boxHeight * (1 - fracY); // tile-space y grows downward; PDF y grows upward
+  page.drawEllipse({ x: markerX, y: markerY, xScale: 4, yScale: 4, color: rgb(0.86, 0.15, 0.15), borderColor: rgb(1, 1, 1), borderWidth: 1 });
+}
 
 export interface PdfFonts {
   regular: PDFFont;
@@ -75,7 +105,16 @@ export async function drawField(
 
     case "location": {
       const loc = value as LocationValue | undefined;
-      drawSimpleText(page, fonts.regular, loc?.label ?? "", field.pdf as PdfBinding);
+      const binding = field.pdf as PdfBinding;
+      if (binding.render === "location-map") {
+        // A snapshot of the map — the PDF is a static document, it can't hold the real
+        // interactive Leaflet map the user picked the point on. Best-effort only: no
+        // coordinates picked, offline, or OSM's tile server unreachable all just leave
+        // the box blank instead of failing the whole PDF generation.
+        if (loc) await drawLocationMap(page, outDoc, loc, binding);
+      } else {
+        drawSimpleText(page, fonts.regular, loc?.label ?? "", binding);
+      }
       break;
     }
 

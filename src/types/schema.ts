@@ -40,7 +40,7 @@ export interface PdfBinding {
   minFontSize?: number;
   font?: "regular" | "bold";
   align?: "left" | "center" | "right";
-  render?: "text" | "circle" | "image" | "date-parts" | "time-parts" | "email-split";
+  render?: "text" | "circle" | "image" | "date-parts" | "time-parts" | "email-split" | "location-map";
   /** Drawn immediately before the value, on the same baseline — for blanks on the
    * official form that have no printed sub-label of their own (e.g. the free line under
    * the Declaración Jurada where "Cargo" / "Institución" must be handwritten). */
@@ -75,6 +75,14 @@ export interface FieldSchema {
   /** The target field's real rect width in PDF points (minus a little padding), used to
    * shrink the font so a long value never overflows the field's box. */
   acroMaxWidth?: number;
+  /** Set on a multi-line AcroForm field (e.g. "Circunstancias") so pdf-lib wraps the
+   * text across the field's own box instead of drawing it as a single line. */
+  acroMultiline?: boolean;
+  /** For a value that must be split across several separate single-line AcroForm fields
+   * that together form one logical answer (e.g. the official template's 3 blank lines
+   * for "Daños sufridos" — VA_Danios1/2/3). Wrapped word-by-word to fit `acroMaxWidth`,
+   * one field per resulting line; extra text beyond the last line is dropped. */
+  acroFields?: string[];
 }
 
 export interface SectionSchema {
@@ -89,7 +97,7 @@ export interface InternalUseRow {
 }
 
 export interface FormSchema {
-  id: "personas-fisicas" | "denuncia-riesgos-varios" | "denuncia-transporte";
+  id: "personas-fisicas" | "denuncia-riesgos-varios" | "denuncia-transporte" | "denuncia-automovil";
   title: string;
   shortDescription: string;
   templateAsset: string;

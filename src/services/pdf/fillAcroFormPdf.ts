@@ -5,7 +5,7 @@ import { loadTemplateBytes } from "./embedTemplate";
 import { drawField, type PdfFonts } from "./drawField";
 import { isFieldVisible } from "../../utils/fieldVisibility";
 import { formatIsoDateToDisplay } from "../../utils/dateFormat";
-import { computeFittingFontSize, truncateToWidth } from "../../utils/text";
+import { computeFittingFontSize, truncateToWidth, wrapText } from "../../utils/text";
 
 const ACRO_FONT_SIZE = 10;
 const ACRO_MIN_FONT_SIZE = 6;
@@ -33,8 +33,9 @@ function ensureDefaultAppearance(textField: PDFTextField) {
   }
 }
 
-function setFieldText(textField: PDFTextField, text: string, size: number) {
+function setFieldText(textField: PDFTextField, text: string, size: number, multiline?: boolean) {
   ensureDefaultAppearance(textField);
+  if (multiline) textField.enableMultiline();
   textField.setFontSize(size);
   textField.setText(text);
 }
@@ -42,10 +43,11 @@ function setFieldText(textField: PDFTextField, text: string, size: number) {
 /** Fills the real fillable AcroForm text fields on the official template directly —
  * guarantees the same alignment a person gets typing into the PDF by hand in Adobe or
  * Chrome, since it's the exact same fields. Falls back to the manual-coordinate overlay
- * (`drawField`) only for the handful of fields the template doesn't expose as a usable
- * form field: the two Sí/No circles (the auto-detected radio groups share one ambiguous
- * export value per pair, so they can't be driven through the RadioGroup API) and the
- * handwritten signature image (a text field can't hold an image). */
+ * (`drawField`) for the handful of things the template doesn't expose as a usable text
+ * field: Sí/No circles, the handwritten signature image, and (Automóviles) the static
+ * map snapshot drawn into the croquis box. A field can use both at once (e.g. "Lugar del
+ * siniestro" writes its address into a real text field AND gets a map image overlaid
+ * elsewhere on the page). */
 export async function fillAcroFormPdf(schema: FormSchema, data: FormData): Promise<Uint8Array> {
   const bytes = await loadTemplateBytes(schema.templateAsset);
   const doc = await PDFDocument.load(bytes);
@@ -59,22 +61,36 @@ export async function fillAcroFormPdf(schema: FormSchema, data: FormData): Promi
       if (!isFieldVisible(field, data)) continue;
       const value = data[field.name];
 
-      if (field.acroField) {
-        const text = resolveDisplayValue(field, value);
-        if (!text) continue;
-        const textField = form.getTextField(field.acroField);
-        const maxWidth = field.acroMaxWidth;
-        const size = maxWidth
-          ? computeFittingFontSize(text, maxWidth, (s, sz) => regular.widthOfTextAtSize(s, sz), ACRO_FONT_SIZE, ACRO_MIN_FONT_SIZE)
-          : ACRO_FONT_SIZE;
-        const renderText = maxWidth ? truncateToWidth(text, maxWidth, (s) => regular.widthOfTextAtSize(s, size)) : text;
-        setFieldText(textField, renderText, size);
-        continue;
-      }
-
-      // Cargo + Institución: the template only has ONE blank line for both ("Texto2"),
-      // handled together right after this loop — skip them here.
+      // Cargo + Institución (Personas Físicas): the template only has ONE blank line for
+      // both ("Texto2"), handled together right after this loop — skip here.
       if (field.name === "cargo" || field.name === "institucion") continue;
+
+      if (field.acroFields && field.acroFields.length > 0) {
+        const text = resolveDisplayValue(field, value);
+        if (text) {
+          // These are single, short-height (~10pt) lines on the official template — a
+          // smaller font than the rest of the form leaves visible clearance from the
+          // printed row border above/below instead of touching it.
+          const size = 8;
+          const maxWidth = field.acroMaxWidth ?? 200;
+          const lines = wrapText(text, maxWidth, (s) => regular.widthOfTextAtSize(s, size));
+          field.acroFields.forEach((acroFieldName, i) => {
+            const line = lines[i];
+            if (line) setFieldText(form.getTextField(acroFieldName), line, size);
+          });
+        }
+      } else if (field.acroField) {
+        const text = resolveDisplayValue(field, value);
+        if (text) {
+          const textField = form.getTextField(field.acroField);
+          const maxWidth = field.acroMaxWidth;
+          const size = maxWidth
+            ? computeFittingFontSize(text, maxWidth, (s, sz) => regular.widthOfTextAtSize(s, sz), ACRO_FONT_SIZE, ACRO_MIN_FONT_SIZE)
+            : ACRO_FONT_SIZE;
+          const renderText = maxWidth ? truncateToWidth(text, maxWidth, (s) => regular.widthOfTextAtSize(s, size)) : text;
+          setFieldText(textField, renderText, size, field.acroMultiline);
+        }
+      }
 
       if (field.pdf) {
         await drawField(page, doc, fonts, field, value);
@@ -86,10 +102,13 @@ export async function fillAcroFormPdf(schema: FormSchema, data: FormData): Promi
   const institucion = (data.institucion as string | undefined) ?? "";
   if (cargo || institucion) {
     const combined = [cargo, institucion].filter(Boolean).join(" — ");
-    const texto2 = form.getTextField("Texto2");
-    const maxWidth = 133; // Texto2 field rect width minus a little padding
-    const size = computeFittingFontSize(combined, maxWidth, (s, sz) => regular.widthOfTextAtSize(s, sz), 9, 6);
-    setFieldText(texto2, truncateToWidth(combined, maxWidth, (s) => regular.widthOfTextAtSize(s, size)), size);
+    const texto2Field = form.getFields().find((f) => f.getName() === "Texto2");
+    if (texto2Field) {
+      const texto2 = form.getTextField("Texto2");
+      const maxWidth = 133; // Texto2 field rect width minus a little padding
+      const size = computeFittingFontSize(combined, maxWidth, (s, sz) => regular.widthOfTextAtSize(s, sz), 9, 6);
+      setFieldText(texto2, truncateToWidth(combined, maxWidth, (s) => regular.widthOfTextAtSize(s, size)), size);
+    }
   }
 
   form.updateFieldAppearances(regular);

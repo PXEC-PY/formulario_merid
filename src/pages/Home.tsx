@@ -26,6 +26,12 @@ const FORM_CARDS: FormCardInfo[] = [
     title: "Denuncia — Transporte de Mercaderías",
     description: "Reporte un siniestro ocurrido durante el transporte de mercaderías.",
   },
+  {
+    to: "/denuncia/automovil",
+    icon: "🚗",
+    title: "Denuncia — Automóviles y Ocupantes",
+    description: "Reporte un siniestro de automóvil, con los datos de ambos vehículos y el lugar en el mapa.",
+  },
 ];
 
 export function Home() {

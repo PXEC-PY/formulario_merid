@@ -4,6 +4,7 @@ import { Home } from "./pages/Home";
 import { PersonasFisicasPage } from "./pages/forms/PersonasFisicasPage";
 import { DenunciaRiesgosVariosPage } from "./pages/forms/DenunciaRiesgosVariosPage";
 import { DenunciaTransportePage } from "./pages/forms/DenunciaTransportePage";
+import { DenunciaAutomovilPage } from "./pages/forms/DenunciaAutomovilPage";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/personas-fisicas" element={<PersonasFisicasPage />} />
         <Route path="/denuncia/riesgos-varios" element={<DenunciaRiesgosVariosPage />} />
         <Route path="/denuncia/transporte" element={<DenunciaTransportePage />} />
+        <Route path="/denuncia/automovil" element={<DenunciaAutomovilPage />} />
       </Routes>
     </AppShell>
   );
