@@ -1,5 +1,5 @@
 import type { PDFDocument, PDFFont, PDFPage } from "pdf-lib";
-import { rgb } from "pdf-lib";
+import { rgb, pushGraphicsState, popGraphicsState, rectangle, clip, endPath } from "pdf-lib";
 import type { FieldSchema, PdfBinding } from "../../types/schema";
 import type { FormFieldValue, LocationValue } from "../../types/formData";
 import type { HandwrittenSignature } from "../../types/signature";
@@ -10,39 +10,72 @@ import { computeFittingFontSize, truncateToWidth } from "../../utils/text";
 import { fetchTilePng, latLngToTile } from "./staticMap";
 
 const MAP_ZOOM = 17;
+const TILE_SIZE = 256;
+const MAX_TILES = 16;
 
-/** Draws a row of side-by-side OSM tiles (no third-party "static map" service involved —
- * see staticMap.ts for why) into `binding`'s box, with a marker dot at the exact point.
- * The number of tiles fetched matches the box's aspect ratio (each source tile is
- * square) so a wide box — like a full croquis area — doesn't stretch a couple of tiles
- * into an unrecognizable smear. Best-effort: any failure (offline, tile server
- * unreachable) just leaves the box blank rather than breaking the rest of the PDF. */
+/** Draws an OSM map snapshot (no third-party "static map" service involved — see
+ * staticMap.ts for why) into `binding`'s box, with the marker always dead-center.
+ *
+ * Tiles are fixed 256px squares that don't line up with an arbitrary marker position, so
+ * centering it exactly means the visible window almost never matches tile boundaries.
+ * Fix: compute the exact pixel window (in OSM's global pixel space at MAP_ZOOM) centered
+ * on the marker and sized to the box's aspect ratio, fetch every tile that window
+ * overlaps, draw each at its true offset, and clip the whole thing to the box — so the
+ * marker lands exactly in the middle regardless of where it falls inside its own tile.
+ *
+ * Best-effort: any failure (offline, tile server unreachable) just leaves the box blank
+ * rather than breaking the rest of the PDF. */
 async function drawLocationMap(page: PDFPage, outDoc: PDFDocument, loc: LocationValue, binding: PdfBinding) {
   if (loc.lat === undefined || loc.lng === undefined) return;
 
   const boxWidth = binding.maxWidth ?? 140;
   const boxHeight = binding.maxHeight ?? 65;
-  const tileCount = Math.min(4, Math.max(1, Math.round(boxWidth / boxHeight)));
+
+  // The pixel window we want to display, in OSM global-pixel space, centered on the
+  // marker and matching the box's aspect ratio (one tile's worth of vertical detail).
+  const windowPxHeight = TILE_SIZE;
+  const windowPxWidth = windowPxHeight * (boxWidth / boxHeight);
 
   const { tileX, tileY, fracX, fracY } = latLngToTile(loc.lat, loc.lng, MAP_ZOOM);
-  const markerTileIndex = Math.floor((tileCount - 1) / 2);
-  const startTileX = tileX - markerTileIndex;
+  const markerPxX = (tileX + fracX) * TILE_SIZE;
+  const markerPxY = (tileY + fracY) * TILE_SIZE;
+  const windowLeft = markerPxX - windowPxWidth / 2;
+  const windowTop = markerPxY - windowPxHeight / 2;
 
-  const tileBytesList = await Promise.all(
-    Array.from({ length: tileCount }, (_, i) => fetchTilePng(MAP_ZOOM, startTileX + i, tileY))
-  );
+  const startTileX = Math.floor(windowLeft / TILE_SIZE);
+  const endTileX = Math.floor((windowLeft + windowPxWidth) / TILE_SIZE);
+  const startTileY = Math.floor(windowTop / TILE_SIZE);
+  const endTileY = Math.floor((windowTop + windowPxHeight) / TILE_SIZE);
+
+  const tileCoords: { tx: number; ty: number }[] = [];
+  for (let ty = startTileY; ty <= endTileY; ty++) {
+    for (let tx = startTileX; tx <= endTileX; tx++) tileCoords.push({ tx, ty });
+  }
+  if (tileCoords.length === 0 || tileCoords.length > MAX_TILES) return;
+
+  const tileBytesList = await Promise.all(tileCoords.map(({ tx, ty }) => fetchTilePng(MAP_ZOOM, tx, ty)));
   if (tileBytesList.some((bytes) => !bytes)) return;
 
-  const tileDrawWidth = boxWidth / tileCount;
+  const scale = boxWidth / windowPxWidth; // PDF points per OSM global pixel, uniform on both axes
   const tileImages = await Promise.all(tileBytesList.map((bytes) => outDoc.embedPng(bytes!)));
-  tileImages.forEach((image, i) => {
-    page.drawImage(image, { x: binding.x + i * tileDrawWidth, y: binding.y, width: tileDrawWidth, height: boxHeight });
-  });
 
-  const markerX = binding.x + (markerTileIndex + fracX) * tileDrawWidth;
-  const markerY = binding.y + boxHeight * (1 - fracY); // tile-space y grows downward; PDF y grows upward
-  // A bold ring + center dot — a tiny dot alone gets lost against a busy street map,
-  // especially now that the box can span the full width of the croquis area.
+  page.pushOperators(pushGraphicsState(), rectangle(binding.x, binding.y, boxWidth, boxHeight), clip(), endPath());
+  tileCoords.forEach(({ tx, ty }, i) => {
+    const pdfX = binding.x + (tx * TILE_SIZE - windowLeft) * scale;
+    // Tile-space y grows downward from the top; PDF y grows upward from binding.y at the
+    // window's bottom edge — convert via distance from the window's top to this tile's
+    // bottom edge.
+    const distFromWindowTopToTileBottom = (ty + 1) * TILE_SIZE - windowTop;
+    const pdfY = binding.y + boxHeight - distFromWindowTopToTileBottom * scale;
+    page.drawImage(tileImages[i], { x: pdfX, y: pdfY, width: TILE_SIZE * scale, height: TILE_SIZE * scale });
+  });
+  page.pushOperators(popGraphicsState());
+
+  // The marker is exactly at the window's center by construction, i.e. exactly at the
+  // box's center — no separate fracX/fracY-based placement needed.
+  const markerX = binding.x + boxWidth / 2;
+  const markerY = binding.y + boxHeight / 2;
+  // A bold ring + center dot — a tiny dot alone gets lost against a busy street map.
   const ringRadius = Math.min(12, Math.max(7, boxHeight * 0.1));
   page.drawEllipse({
     x: markerX,

@@ -67,15 +67,20 @@ export function useLocationMap(onMarkerMove: (lat: number, lng: number) => void,
 
     // Leaflet measures its container's size the instant it's created. If that happens
     // before the browser has finished painting the surrounding layout (very common right
-    // after a step/section mounts), it can grab a stale size and render blank/partial
-    // tiles until something forces a relayout — e.g. the user clicking or resizing the
-    // window. Force a recalculation a couple of frames later so it's correct from the
-    // very first paint, with no interaction required.
+    // after a step/section mounts, or on the desktop split-pane layout where the grid
+    // settles a beat later), it grabs a stale size and renders a blank/partial map until
+    // something forces a relayout — previously that "something" was the user clicking or
+    // resizing the window. A couple of rAF frames covers the common case; a
+    // ResizeObserver on top makes it self-correct for any later layout shift too
+    // (sidebar collapsing, fonts loading, etc.), so the map is never stuck blank.
     requestAnimationFrame(() => {
       requestAnimationFrame(() => map.invalidateSize());
     });
+    const resizeObserver = new ResizeObserver(() => map.invalidateSize());
+    resizeObserver.observe(containerRef.current);
 
     return () => {
+      resizeObserver.disconnect();
       map.remove();
       mapRef.current = null;
       markerRef.current = null;
