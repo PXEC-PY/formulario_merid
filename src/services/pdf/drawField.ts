@@ -11,30 +11,48 @@ import { fetchTilePng, latLngToTile } from "./staticMap";
 
 const MAP_ZOOM = 17;
 
-/** Draws a 2-tile-wide OSM map snapshot (no third-party "static map" service involved —
+/** Draws a row of side-by-side OSM tiles (no third-party "static map" service involved —
  * see staticMap.ts for why) into `binding`'s box, with a marker dot at the exact point.
- * Best-effort: any failure (offline, tile server unreachable) just leaves the box blank
- * rather than breaking the rest of the PDF. */
+ * The number of tiles fetched matches the box's aspect ratio (each source tile is
+ * square) so a wide box — like a full croquis area — doesn't stretch a couple of tiles
+ * into an unrecognizable smear. Best-effort: any failure (offline, tile server
+ * unreachable) just leaves the box blank rather than breaking the rest of the PDF. */
 async function drawLocationMap(page: PDFPage, outDoc: PDFDocument, loc: LocationValue, binding: PdfBinding) {
   if (loc.lat === undefined || loc.lng === undefined) return;
-  const { tileX, tileY, fracX, fracY } = latLngToTile(loc.lat, loc.lng, MAP_ZOOM);
-  const [leftBytes, rightBytes] = await Promise.all([
-    fetchTilePng(MAP_ZOOM, tileX, tileY),
-    fetchTilePng(MAP_ZOOM, tileX + 1, tileY),
-  ]);
-  if (!leftBytes || !rightBytes) return;
 
   const boxWidth = binding.maxWidth ?? 140;
   const boxHeight = binding.maxHeight ?? 65;
-  const tileDrawWidth = boxWidth / 2;
+  const tileCount = Math.min(4, Math.max(1, Math.round(boxWidth / boxHeight)));
 
-  const [leftImage, rightImage] = await Promise.all([outDoc.embedPng(leftBytes), outDoc.embedPng(rightBytes)]);
-  page.drawImage(leftImage, { x: binding.x, y: binding.y, width: tileDrawWidth, height: boxHeight });
-  page.drawImage(rightImage, { x: binding.x + tileDrawWidth, y: binding.y, width: tileDrawWidth, height: boxHeight });
+  const { tileX, tileY, fracX, fracY } = latLngToTile(loc.lat, loc.lng, MAP_ZOOM);
+  const markerTileIndex = Math.floor((tileCount - 1) / 2);
+  const startTileX = tileX - markerTileIndex;
 
-  const markerX = binding.x + fracX * tileDrawWidth;
+  const tileBytesList = await Promise.all(
+    Array.from({ length: tileCount }, (_, i) => fetchTilePng(MAP_ZOOM, startTileX + i, tileY))
+  );
+  if (tileBytesList.some((bytes) => !bytes)) return;
+
+  const tileDrawWidth = boxWidth / tileCount;
+  const tileImages = await Promise.all(tileBytesList.map((bytes) => outDoc.embedPng(bytes!)));
+  tileImages.forEach((image, i) => {
+    page.drawImage(image, { x: binding.x + i * tileDrawWidth, y: binding.y, width: tileDrawWidth, height: boxHeight });
+  });
+
+  const markerX = binding.x + (markerTileIndex + fracX) * tileDrawWidth;
   const markerY = binding.y + boxHeight * (1 - fracY); // tile-space y grows downward; PDF y grows upward
-  page.drawEllipse({ x: markerX, y: markerY, xScale: 4, yScale: 4, color: rgb(0.86, 0.15, 0.15), borderColor: rgb(1, 1, 1), borderWidth: 1 });
+  // A bold ring + center dot — a tiny dot alone gets lost against a busy street map,
+  // especially now that the box can span the full width of the croquis area.
+  const ringRadius = Math.min(12, Math.max(7, boxHeight * 0.1));
+  page.drawEllipse({
+    x: markerX,
+    y: markerY,
+    xScale: ringRadius,
+    yScale: ringRadius,
+    borderColor: rgb(0.86, 0.15, 0.15),
+    borderWidth: 2.5,
+  });
+  page.drawEllipse({ x: markerX, y: markerY, xScale: 2.5, yScale: 2.5, color: rgb(0.86, 0.15, 0.15) });
 }
 
 export interface PdfFonts {

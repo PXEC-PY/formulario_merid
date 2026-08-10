@@ -65,6 +65,16 @@ export function useLocationMap(onMarkerMove: (lat: number, lng: number) => void,
     mapRef.current = map;
     if (hasInitial) placeMarker(initial!.lat!, initial!.lng!);
 
+    // Leaflet measures its container's size the instant it's created. If that happens
+    // before the browser has finished painting the surrounding layout (very common right
+    // after a step/section mounts), it can grab a stale size and render blank/partial
+    // tiles until something forces a relayout — e.g. the user clicking or resizing the
+    // window. Force a recalculation a couple of frames later so it's correct from the
+    // very first paint, with no interaction required.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => map.invalidateSize());
+    });
+
     return () => {
       map.remove();
       mapRef.current = null;
