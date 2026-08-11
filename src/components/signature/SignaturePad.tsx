@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { FieldSchema } from "../../types/schema";
 import type { HandwrittenSignature } from "../../types/signature";
 import { SignaturePreview } from "./SignaturePreview";
-import { SignatureFullscreenModal } from "./SignatureFullscreenModal";
+import { SignatureModal } from "./SignatureModal";
 import { FieldWrapper } from "../fields/FieldWrapper";
 
 interface SignaturePadProps {
@@ -13,10 +13,11 @@ interface SignaturePadProps {
 }
 
 /** A cramped inline canvas makes for an illegible signature, especially on a phone — so
- * signing itself always happens in SignatureFullscreenModal; this component is just the
- * "Tocar para firmar" trigger and, once captured, the preview/redo state. */
+ * signing itself always happens in SignatureModal (a floating dialog, not inline); this
+ * component is just the "Tocar para firmar" trigger and, once captured, the preview/redo
+ * state. */
 export function SignaturePad({ field, value, onChange, error }: SignaturePadProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isSigningOpen, setIsSigningOpen] = useState(false);
   const isRequired = field.rules?.some((r) => r.type === "required") ?? false;
 
   if (value) {
@@ -30,7 +31,7 @@ export function SignaturePad({ field, value, onChange, error }: SignaturePadProp
 
   const handleConfirm = (dataUrl: string) => {
     onChange({ type: "handwritten-image", dataUrl, capturedAt: new Date().toISOString() });
-    setIsExpanded(false);
+    setIsSigningOpen(false);
   };
 
   return (
@@ -48,7 +49,7 @@ export function SignaturePad({ field, value, onChange, error }: SignaturePadProp
     >
       <button
         type="button"
-        onClick={() => setIsExpanded(true)}
+        onClick={() => setIsSigningOpen(true)}
         className="flex h-40 w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-white text-slate-500 transition-colors hover:border-brand-400 hover:bg-brand-50/40 hover:text-brand-700"
       >
         <span className="text-2xl" aria-hidden>
@@ -56,7 +57,7 @@ export function SignaturePad({ field, value, onChange, error }: SignaturePadProp
         </span>
         <span className="text-sm font-medium">Tocar para firmar</span>
       </button>
-      {isExpanded && <SignatureFullscreenModal onConfirm={handleConfirm} onClose={() => setIsExpanded(false)} />}
+      {isSigningOpen && <SignatureModal onConfirm={handleConfirm} onClose={() => setIsSigningOpen(false)} />}
     </FieldWrapper>
   );
 }
