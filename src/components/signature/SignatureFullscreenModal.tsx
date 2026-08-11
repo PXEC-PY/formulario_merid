@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useSignaturePad } from "../../hooks/useSignaturePad";
 
 interface SignatureFullscreenModalProps {
@@ -9,7 +10,17 @@ interface SignatureFullscreenModalProps {
 /** Full-viewport signing surface, opened from SignaturePad's "Tocar para firmar" box — a
  * phone-sized inline canvas makes for a cramped, illegible signature, so actual drawing
  * always happens here instead. A fresh useSignaturePad() instance per mount means there's
- * no canvas state to reset between opens (unlike the old inline pad). */
+ * no canvas state to reset between opens (unlike the old inline pad).
+ *
+ * Rendered via a portal straight into `document.body` — `position: fixed` only escapes to
+ * the real viewport when NO ancestor has `container-type`/`transform`/`filter`/etc, any of
+ * which makes that ancestor the fixed element's containing block instead. The card this
+ * lives inside (DynamicForm's wrapper in StepperMobile/SplitPaneDesktop) has `@container`
+ * for the checklist tables' container queries, which does exactly that: without the
+ * portal, "fullscreen" ends up clipped to that card's own box instead of the screen, so on
+ * a tall card (desktop split-pane, lots of checklist rows above it) the close button can
+ * render off past the bottom of the visible viewport — unreachable — and the canvas gets
+ * sized against that same wrong box. */
 export function SignatureFullscreenModal({ onConfirm, onClose }: SignatureFullscreenModalProps) {
   const { canvasRef, isEmpty, clear, toDataUrl, handlers } = useSignaturePad();
 
@@ -32,7 +43,7 @@ export function SignatureFullscreenModal({ onConfirm, onClose }: SignatureFullsc
     onConfirm(dataUrl);
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex flex-col bg-white">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
         <p className="text-sm font-medium text-slate-700">Firmá con el dedo o el mouse</p>
@@ -65,6 +76,7 @@ export function SignatureFullscreenModal({ onConfirm, onClose }: SignatureFullsc
           Confirmar firma
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
