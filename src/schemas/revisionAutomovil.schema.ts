@@ -303,7 +303,6 @@ export const revisionAutomovilSchema: FormSchema = {
       title: "Datos del Inspector",
       fields: [
         { name: "nombreInspector", label: "Nombre del Inspector", type: "text", rules: [{ type: "required", message: "Ingrese el nombre del inspector" }] },
-        { name: "nroRegistroInspector", label: "N° de Registro / Legajo", type: "text" },
         { name: "fechaInspeccion", label: "Fecha de Inspección", type: "date" },
         { name: "firmaInspector", label: "Firma del Inspector", type: "signature" },
       ],

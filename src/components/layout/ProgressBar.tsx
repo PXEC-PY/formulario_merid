@@ -14,11 +14,13 @@ export function ProgressBar({ steps, currentStep }: ProgressBarProps) {
           style={{ width: `${percent}%` }}
         />
       </div>
-      <div className="hidden justify-between text-xs font-medium text-slate-500 sm:flex">
+      <div className="hidden gap-4 overflow-x-auto text-xs font-medium text-slate-500 sm:flex">
         {steps.map((step, i) => (
           <span
             key={step}
-            className={i === currentStep ? "text-brand-700" : i < currentStep ? "text-brand-500" : "text-slate-400"}
+            className={`shrink-0 whitespace-nowrap ${
+              i === currentStep ? "text-brand-700" : i < currentStep ? "text-brand-500" : "text-slate-400"
+            }`}
           >
             {step.toUpperCase()}
           </span>

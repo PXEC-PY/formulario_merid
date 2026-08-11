@@ -12,7 +12,16 @@ interface ChecklistTableFieldProps {
 /** One row per `field.tableRows` entry: item label, a pill-button group generalizing
  * RadioYesNo's Sí/No pattern to N options (Bueno/Regular/Malo, Sí/No, ...), and a short
  * free-text Observaciones input. Validation is intentionally lenient (an inspector may
- * leave inapplicable rows blank) so nothing here blocks the wizard from advancing. */
+ * leave inapplicable rows blank) so nothing here blocks the wizard from advancing.
+ *
+ * Uses container queries (`@xl:`), not viewport ones (`sm:`) — this table also renders
+ * inside the notebook/tablet-landscape split-pane review layout, where the form column
+ * can be under 550px even though the browser window itself is plenty wide. A viewport
+ * breakpoint would still force the row layout there and crush the Observaciones input to
+ * a couple of visible characters; a container breakpoint correctly falls back to the
+ * stacked layout instead, keyed off the column's own rendered width. Requires an
+ * ancestor with the `@container` class (added on the card wrapping DynamicForm in both
+ * StepperMobile and SplitPaneDesktop). */
 export function ChecklistTableField({ field, value, onChange, error }: ChecklistTableFieldProps) {
   const rows = field.tableRows ?? [];
   const options = field.options ?? [];
@@ -29,9 +38,9 @@ export function ChecklistTableField({ field, value, onChange, error }: Checklist
         {rows.map((row) => {
           const rowValue = data[row.key];
           return (
-            <div key={row.key} className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:gap-4">
-              <span className="text-sm font-medium text-slate-700 sm:w-48 sm:flex-none">{row.label}</span>
-              <div className="flex flex-wrap gap-2 sm:flex-none" role="radiogroup" aria-label={row.label}>
+            <div key={row.key} className="flex flex-col gap-2 p-3 @xl:flex-row @xl:items-center @xl:gap-4">
+              <span className="text-sm font-medium text-slate-700 @xl:w-40 @xl:flex-none">{row.label}</span>
+              <div className="flex flex-wrap gap-2 @xl:flex-none" role="radiogroup" aria-label={row.label}>
                 {options.map((opt) => (
                   <button
                     key={opt.value}

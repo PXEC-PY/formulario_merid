@@ -40,7 +40,7 @@ export function StepperMobile({
     <div className="mx-auto flex max-w-2xl flex-col gap-5 px-4 py-6 sm:px-6">
       <h1 className="text-xl font-bold text-slate-900">{schema.title}</h1>
       <ProgressBar steps={steps} currentStep={currentStepIndex} />
-      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="@container rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         {view === "form" ? (
           <DynamicForm section={wizard.section} data={wizard.data} errors={wizard.errors} onFieldChange={wizard.setField} />
         ) : (

@@ -42,8 +42,8 @@ export function SplitPaneDesktop({
       <div className="mt-4">
         <ProgressBar steps={steps} currentStep={currentStepIndex} />
       </div>
-      <div className="mt-6 grid grid-cols-2 gap-8">
-        <div className="flex flex-col gap-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="mt-6 grid grid-cols-[3fr_2fr] gap-6 xl:gap-8">
+        <div className="@container flex flex-col gap-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           {view === "form" ? (
             <DynamicForm section={wizard.section} data={wizard.data} errors={wizard.errors} onFieldChange={wizard.setField} />
           ) : (
