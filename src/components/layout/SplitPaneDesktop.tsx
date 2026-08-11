@@ -47,7 +47,15 @@ export function SplitPaneDesktop({
           {view === "form" ? (
             <DynamicForm section={wizard.section} data={wizard.data} errors={wizard.errors} onFieldChange={wizard.setField} />
           ) : (
-            <ReviewStep formTitle={schema.title} status={pdfStatus} url={pdfUrl} error={pdfError} onGenerate={onGeneratePdf} />
+            <ReviewStep
+              formTitle={schema.title}
+              status={pdfStatus}
+              url={pdfUrl}
+              error={pdfError}
+              onGenerate={onGeneratePdf}
+              schema={schema}
+              data={wizard.data}
+            />
           )}
           <FormNavigation
             onBack={onBack}

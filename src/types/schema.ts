@@ -9,7 +9,9 @@ export type FieldType =
   | "select"
   | "signature"
   | "static-legal-text"
-  | "location";
+  | "location"
+  | "checklist-table"
+  | "photo";
 
 export type RuleType =
   | "required"
@@ -83,6 +85,16 @@ export interface FieldSchema {
    * for "Daños sufridos" — VA_Danios1/2/3). Wrapped word-by-word to fit `acroMaxWidth`,
    * one field per resulting line; extra text beyond the last line is dropped. */
   acroFields?: string[];
+  /** Only for `type: "checklist-table"` — the rows of the table, in print order. Each
+   * row's answer (one of `options`) plus its own free-text "Observaciones" is keyed by
+   * `key` in the field's `ChecklistTableValue`. */
+  tableRows?: { key: string; label: string }[];
+  /** Only for `type: "photo"` — max number of photos this field accepts. 1 for a single
+   * named slot (e.g. "Frontal"), >1 for a multi-photo bucket (e.g. "Daños Adicionales"). */
+  photoMax?: number;
+  /** Only consulted by `pdfStrategy: "generated"` — lets two short fields (e.g. Año /
+   * Color) sit side by side in the auto-flowed layout instead of one per line. */
+  layoutWidth?: "full" | "half";
 }
 
 export interface SectionSchema {
@@ -97,16 +109,19 @@ export interface InternalUseRow {
 }
 
 export interface FormSchema {
-  id: "personas-fisicas" | "denuncia-riesgos-varios" | "denuncia-transporte" | "denuncia-automovil";
+  id: "personas-fisicas" | "denuncia-riesgos-varios" | "denuncia-transporte" | "denuncia-automovil" | "revision-automovil";
   title: string;
   shortDescription: string;
-  templateAsset: string;
+  /** Not used by `pdfStrategy: "generated"`, which has no official template to embed. */
+  templateAsset?: string;
   /** "acroform" (Personas Físicas): the official PDF has real fillable AcroForm text
    * fields — fill those directly via pdf-lib's Form API for guaranteed pixel-perfect
    * alignment. "overlay" (both denuncia forms, and the default): the official PDF is a
    * flat vector export with no fillable fields, so values are drawn at manually
-   * calibrated coordinates on top of it. */
-  pdfStrategy?: "overlay" | "acroform";
+   * calibrated coordinates on top of it. "generated" (Revisión de Automóvil): there is no
+   * official template at all — the whole PDF is built from scratch with an auto-flowing,
+   * paginating layout (see src/services/pdf/buildGeneratedPdf.ts). */
+  pdfStrategy?: "overlay" | "acroform" | "generated";
   sections: SectionSchema[];
   /** Staff-only fields present on the official PDF (e.g. "USO INTERNO"). Never rendered
    * in the customer-facing form and never written to by fillPdf in this MVP — kept typed

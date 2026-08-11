@@ -1,6 +1,7 @@
 import type { FieldSchema } from "../../types/schema";
-import type { FormData, LocationValue } from "../../types/formData";
+import type { ChecklistTableValue, FormData, LocationValue } from "../../types/formData";
 import type { HandwrittenSignature } from "../../types/signature";
+import type { Photo } from "../../types/photo";
 import { isFieldVisible } from "../../utils/fieldVisibility";
 import { TextField } from "../fields/TextField";
 import { CharCounterTextArea } from "../fields/CharCounterTextArea";
@@ -10,6 +11,8 @@ import { RadioYesNo } from "../fields/RadioYesNo";
 import { SelectField } from "../fields/SelectField";
 import { LocationField } from "../fields/LocationField";
 import { StaticLegalText } from "../fields/StaticLegalText";
+import { ChecklistTableField } from "../fields/ChecklistTableField";
+import { PhotoField } from "../fields/PhotoField";
 import { SignaturePad } from "../signature/SignaturePad";
 
 interface FieldRendererProps {
@@ -49,6 +52,12 @@ export function FieldRenderer({ field, data, errors, onFieldChange }: FieldRende
       );
     case "static-legal-text":
       return <StaticLegalText field={field} />;
+    case "checklist-table":
+      return (
+        <ChecklistTableField field={field} value={value as ChecklistTableValue | undefined} onChange={onChange} error={error} />
+      );
+    case "photo":
+      return <PhotoField field={field} value={(value as Photo[]) ?? []} onChange={onChange} error={error} />;
     default:
       return null;
   }

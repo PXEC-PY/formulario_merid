@@ -1,22 +1,39 @@
 import type { FieldSchema } from "../../types/schema";
-import type { FormFieldValue, LocationValue } from "../../types/formData";
+import type { ChecklistTableValue, FormFieldValue, LocationValue } from "../../types/formData";
+import type { Signature } from "../../types/signature";
 import { isValidCi, isValidEmail, isValidPhone, isValidRuc } from "./rules";
+
+// `ChecklistTableValue` is a `Record<string, ChecklistRowValue>`, so a plain `"type" in
+// value` / `"label" in value` check doesn't structurally rule it out for TS (its index
+// signature could technically have either key) — named predicates keep the narrowing
+// explicit instead of fighting the compiler at each call site.
+function isSignature(value: object): value is Signature {
+  return "type" in value;
+}
+function isLocationValue(value: object): value is LocationValue {
+  return "label" in value;
+}
 
 function isEmpty(value: FormFieldValue): boolean {
   if (value === undefined || value === null) return true;
   if (typeof value === "string") return value.trim().length === 0;
   if (typeof value === "boolean") return false;
-  if ("type" in value) return false; // a captured Signature — presence alone means "answered"
-  const location = value as LocationValue;
-  return !location.label || location.label.trim().length === 0;
+  if (Array.isArray(value)) return value.length === 0; // Photo[]
+  if (isSignature(value)) return false; // presence alone means "answered"
+  if (isLocationValue(value)) return !value.label || value.label.trim().length === 0;
+  // ChecklistTableValue — empty iff no row has an answer yet.
+  const rows = value as ChecklistTableValue;
+  return !Object.values(rows).some((row) => !!row?.option);
 }
 
 function asString(value: FormFieldValue): string {
   if (value === undefined || value === null) return "";
   if (typeof value === "string") return value;
   if (typeof value === "boolean") return value ? "true" : "false";
-  if ("type" in value) return value.type;
-  return (value as LocationValue).label ?? "";
+  if (Array.isArray(value)) return `${value.length} foto(s)`;
+  if (isSignature(value)) return value.type;
+  if (isLocationValue(value)) return value.label ?? "";
+  return "";
 }
 
 /** Runs a single field's declarative rules against its current value. Returns the first

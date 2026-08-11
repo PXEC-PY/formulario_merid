@@ -49,6 +49,7 @@ function setFieldText(textField: PDFTextField, text: string, size: number, multi
  * siniestro" writes its address into a real text field AND gets a map image overlaid
  * elsewhere on the page). */
 export async function fillAcroFormPdf(schema: FormSchema, data: FormData): Promise<Uint8Array> {
+  if (!schema.templateAsset) throw new Error(`El formulario "${schema.id}" no tiene una plantilla PDF configurada`);
   const bytes = await loadTemplateBytes(schema.templateAsset);
   const doc = await PDFDocument.load(bytes);
   const form = doc.getForm();

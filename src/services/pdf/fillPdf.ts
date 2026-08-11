@@ -5,12 +5,16 @@ import { embedTemplateBackground } from "./embedTemplate";
 import { drawField } from "./drawField";
 import { isFieldVisible } from "../../utils/fieldVisibility";
 import { fillAcroFormPdf } from "./fillAcroFormPdf";
+import { buildGeneratedPdf } from "./buildGeneratedPdf";
 
-/** Entry point used by usePdfGeneration — dispatches to whichever of the two generation
+/** Entry point used by usePdfGeneration — dispatches to whichever of the three generation
  * strategies the schema declares (see `FormSchema.pdfStrategy`). */
 export async function fillPdf(schema: FormSchema, data: FormData): Promise<Uint8Array> {
   if (schema.pdfStrategy === "acroform") {
     return fillAcroFormPdf(schema, data);
+  }
+  if (schema.pdfStrategy === "generated") {
+    return buildGeneratedPdf(schema, data);
   }
   return fillOverlayPdf(schema, data);
 }
@@ -19,6 +23,7 @@ export async function fillPdf(schema: FormSchema, data: FormData): Promise<Uint8
  * schema field's current value at its calibrated coordinate. Used by both denuncia
  * forms, whose templates have no fillable AcroForm fields. */
 async function fillOverlayPdf(schema: FormSchema, data: FormData): Promise<Uint8Array> {
+  if (!schema.templateAsset) throw new Error(`El formulario "${schema.id}" no tiene una plantilla PDF configurada`);
   const outDoc = await PDFDocument.create();
   const page = await embedTemplateBackground(outDoc, schema.templateAsset);
   const regular = await outDoc.embedFont(StandardFonts.Helvetica);

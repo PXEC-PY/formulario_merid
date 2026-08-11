@@ -45,7 +45,15 @@ export function StepperMobile({
           <DynamicForm section={wizard.section} data={wizard.data} errors={wizard.errors} onFieldChange={wizard.setField} />
         ) : (
           <div className="flex flex-col gap-6">
-            <ReviewStep formTitle={schema.title} status={pdfStatus} url={pdfUrl} error={pdfError} onGenerate={onGeneratePdf} />
+            <ReviewStep
+              formTitle={schema.title}
+              status={pdfStatus}
+              url={pdfUrl}
+              error={pdfError}
+              onGenerate={onGeneratePdf}
+              schema={schema}
+              data={wizard.data}
+            />
             <PdfPreview url={pdfUrl} isLoading={pdfStatus === "loading"} />
           </div>
         )}

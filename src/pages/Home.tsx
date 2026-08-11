@@ -32,6 +32,12 @@ const FORM_CARDS: FormCardInfo[] = [
     title: "Denuncia — Automóviles y Ocupantes",
     description: "Reporte un siniestro de automóvil, con los datos de ambos vehículos y el lugar en el mapa.",
   },
+  {
+    to: "/revision-automovil",
+    icon: "🔍",
+    title: "Revisión de Automóvil del Asegurado",
+    description: "Inspeccione el estado del vehículo del asegurado con checklist de condición general y fotos.",
+  },
 ];
 
 export function Home() {
