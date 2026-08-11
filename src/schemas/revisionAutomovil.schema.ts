@@ -62,7 +62,7 @@ export const revisionAutomovilSchema: FormSchema = {
       fields: [
         {
           name: "checklistFrontal",
-          label: "Frontal",
+          label: "",
           type: "checklist-table",
           options: BUENO_REGULAR_MALO_OPTIONS,
           tableRows: [
@@ -96,7 +96,7 @@ export const revisionAutomovilSchema: FormSchema = {
       fields: [
         {
           name: "checklistLateral",
-          label: "Lateral (Derecho e Izquierdo)",
+          label: "",
           type: "checklist-table",
           options: BUENO_REGULAR_MALO_OPTIONS,
           tableRows: [
@@ -118,7 +118,7 @@ export const revisionAutomovilSchema: FormSchema = {
       fields: [
         {
           name: "checklistTrasera",
-          label: "Trasera",
+          label: "",
           type: "checklist-table",
           options: BUENO_REGULAR_MALO_OPTIONS,
           tableRows: [
@@ -139,7 +139,7 @@ export const revisionAutomovilSchema: FormSchema = {
       fields: [
         {
           name: "checklistInterior",
-          label: "Interior",
+          label: "",
           type: "checklist-table",
           options: BUENO_REGULAR_MALO_OPTIONS,
           tableRows: [
@@ -147,13 +147,13 @@ export const revisionAutomovilSchema: FormSchema = {
             { key: "tablero", label: "Tablero" },
             { key: "cinturonSeguridad", label: "Cinturón de seguridad" },
             { key: "aireAcondicionadoInterior", label: "Aire acondicionado" },
-            { key: "sistemaSonido", label: "Sistema de sonido" },
+            { key: "sistemaSonido", label: "Radio" },
             { key: "otrosInterior", label: "Otros" },
           ],
         },
         {
           name: "tipoSistemaSonido",
-          label: "Tipo de sistema de sonido",
+          label: "Tipo de Radio",
           type: "select",
           layoutWidth: "half",
           options: [
@@ -183,7 +183,7 @@ export const revisionAutomovilSchema: FormSchema = {
       fields: [
         {
           name: "checklistDocumentos",
-          label: "Documentos del Vehículo",
+          label: "",
           type: "checklist-table",
           options: SI_NO_OPTIONS,
           tableRows: [
@@ -199,7 +199,7 @@ export const revisionAutomovilSchema: FormSchema = {
       fields: [
         {
           name: "checklistMecanica",
-          label: "Mecánica y Funcionamiento",
+          label: "",
           type: "checklist-table",
           options: BUENO_REGULAR_MALO_OPTIONS,
           tableRows: [
@@ -208,11 +208,7 @@ export const revisionAutomovilSchema: FormSchema = {
             { key: "frenos", label: "Frenos" },
             { key: "suspension", label: "Suspensión" },
             { key: "direccion", label: "Dirección" },
-            { key: "sistemaEscape", label: "Sistema de escape" },
-            { key: "sistemaElectricoMecanica", label: "Sistema eléctrico" },
-            { key: "bateria", label: "Batería" },
             { key: "aireAcondicionadoMecanica", label: "Aire acondicionado" },
-            { key: "fugasFluidos", label: "Fugas de fluidos" },
             { key: "otrosMecanica", label: "Otros" },
           ],
         },
@@ -257,19 +253,18 @@ export const revisionAutomovilSchema: FormSchema = {
       fields: [
         {
           name: "checklistAccesorios",
-          label: "Accesorios y Equipamiento",
+          label: "",
           type: "checklist-table",
           options: SI_NO_OPTIONS,
           tableRows: [
-            { key: "llantaRepuesto", label: "Llanta de repuesto" },
-            { key: "portaBulto", label: "Porta bulto / Baca de techo" },
+            { key: "portaBulto", label: "Porta Bulto" },
             { key: "equipoSonidoAdicional", label: "Equipo de sonido adicional (parlantes grandes)" },
             { key: "defensaFrontalMetal", label: "Defensa frontal de metal" },
             { key: "defensaTraseraMetal", label: "Defensa trasera de metal" },
-            { key: "buscahuellasAccesorio", label: "Buscahuellas / Estribos" },
+            { key: "buscahuellasAccesorio", label: "Buscahuellas" },
             { key: "barraLed", label: "Barra LED" },
             { key: "carpaMaritimaRigida", label: "Carpa marítima o rígida" },
-            { key: "tiraTrailer", label: "Tira / Gancho de remolque" },
+            { key: "tiraTrailer", label: "Tiratrailer" },
             { key: "antivuelco", label: "Antivuelco" },
             { key: "otrosAccesorios", label: "Otros" },
           ],
@@ -330,9 +325,9 @@ export const revisionAutomovilSchema: FormSchema = {
         { name: "fotoAsientoAtras", label: "Asiento de Atrás", type: "photo", photoMax: 1 },
         { name: "fotoValijera", label: "Valijera / Baúl", type: "photo", photoMax: 1 },
         { name: "fotoMotor", label: "Motor", type: "photo", photoMax: 1 },
-        { name: "fotoRadio", label: "Radio / Sistema de Sonido", type: "photo", photoMax: 1 },
-        { name: "fotoAccesoriosAgregados", label: "Accesorios Agregados por el Dueño", type: "photo", photoMax: 10 },
+        { name: "fotoRadio", label: "Radio", type: "photo", photoMax: 1 },
         { name: "fotosDaniosAdicionales", label: "Daños Adicionales", type: "photo", photoMax: 10 },
+        { name: "fotoAccesoriosAgregados", label: "Accesorios Agregados por el Dueño", type: "photo", photoMax: 14 },
       ],
     },
   ],

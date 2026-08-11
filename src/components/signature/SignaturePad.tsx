@@ -1,7 +1,8 @@
+import { useState } from "react";
 import type { FieldSchema } from "../../types/schema";
 import type { HandwrittenSignature } from "../../types/signature";
-import { useSignaturePad } from "../../hooks/useSignaturePad";
 import { SignaturePreview } from "./SignaturePreview";
+import { SignatureFullscreenModal } from "./SignatureFullscreenModal";
 import { FieldWrapper } from "../fields/FieldWrapper";
 
 interface SignaturePadProps {
@@ -11,18 +12,15 @@ interface SignaturePadProps {
   error?: string;
 }
 
+/** A cramped inline canvas makes for an illegible signature, especially on a phone — so
+ * signing itself always happens in SignatureFullscreenModal; this component is just the
+ * "Tocar para firmar" trigger and, once captured, the preview/redo state. */
 export function SignaturePad({ field, value, onChange, error }: SignaturePadProps) {
-  const { canvasRef, isEmpty, clear, toDataUrl, handlers } = useSignaturePad();
+  const [isExpanded, setIsExpanded] = useState(false);
   const isRequired = field.rules?.some((r) => r.type === "required") ?? false;
 
   if (value) {
-    const redo = () => {
-      // The canvas isn't mounted while the preview is showing — reset the pad's own
-      // "has content" state now so the canvas remounts blank (and gets properly sized)
-      // once `value` clears, instead of remounting blank while still thinking it's full.
-      clear();
-      onChange(undefined as unknown as HandwrittenSignature);
-    };
+    const redo = () => onChange(undefined as unknown as HandwrittenSignature);
     return (
       <FieldWrapper label={field.label} error={error} required={isRequired}>
         <SignaturePreview signature={value} onRedo={redo} />
@@ -30,10 +28,9 @@ export function SignaturePad({ field, value, onChange, error }: SignaturePadProp
     );
   }
 
-  const confirm = () => {
-    const dataUrl = toDataUrl();
-    if (!dataUrl) return;
+  const handleConfirm = (dataUrl: string) => {
     onChange({ type: "handwritten-image", dataUrl, capturedAt: new Date().toISOString() });
+    setIsExpanded(false);
   };
 
   return (
@@ -49,30 +46,17 @@ export function SignaturePad({ field, value, onChange, error }: SignaturePadProp
         </span>
       }
     >
-      <div className="touch-none rounded-lg border-2 border-dashed border-slate-300 bg-white">
-        <canvas
-          ref={canvasRef}
-          className="h-40 w-full touch-none rounded-lg"
-          {...handlers}
-        />
-      </div>
-      <div className="mt-2 flex gap-3">
-        <button
-          type="button"
-          onClick={clear}
-          className="min-h-11 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
-        >
-          Limpiar
-        </button>
-        <button
-          type="button"
-          onClick={confirm}
-          disabled={isEmpty}
-          className="min-h-11 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-        >
-          Confirmar firma
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => setIsExpanded(true)}
+        className="flex h-40 w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-white text-slate-500 transition-colors hover:border-brand-400 hover:bg-brand-50/40 hover:text-brand-700"
+      >
+        <span className="text-2xl" aria-hidden>
+          ✍️
+        </span>
+        <span className="text-sm font-medium">Tocar para firmar</span>
+      </button>
+      {isExpanded && <SignatureFullscreenModal onConfirm={handleConfirm} onClose={() => setIsExpanded(false)} />}
     </FieldWrapper>
   );
 }
