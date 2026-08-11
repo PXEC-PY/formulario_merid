@@ -35,7 +35,7 @@ const FORM_CARDS: FormCardInfo[] = [
   {
     to: "/revision-automovil",
     icon: "🔍",
-    title: "Revisión de Automóvil del Asegurado",
+    title: "Inspección de Riesgo - Sección Automóviles",
     description: "Inspeccione el estado del vehículo del asegurado con checklist de condición general y fotos.",
   },
 ];
