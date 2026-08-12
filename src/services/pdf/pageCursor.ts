@@ -60,7 +60,10 @@ export class PageCursor {
   }
 
   drawSectionHeader(title: string): void {
-    this.ensureSpace(26);
+    // Reserve room for the bar itself plus roughly one label/value row after it — a
+    // section header with nothing following it on the same page ("orphaned" at the
+    // bottom, its content pushed alone onto the next page) reads as a layout bug.
+    this.ensureSpace(26 + LABEL_SIZE + 4 + VALUE_SIZE + 2 + ROW_GAP);
     const barHeight = 20;
     this.y -= barHeight;
     this.page.drawRectangle({ x: this.contentX, y: this.y, width: this.contentWidth, height: barHeight, color: BRAND_GREEN });
