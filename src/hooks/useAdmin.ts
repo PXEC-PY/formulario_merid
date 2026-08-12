@@ -84,7 +84,6 @@ export async function deleteDepartment(id: string): Promise<{ error: string | nu
 
 export interface DownloadLogRow {
   id: number;
-  userId: string;
   userLabel: string;
   formId: string;
   kind: "pdf" | "photos_zip";
@@ -97,24 +96,16 @@ export interface DownloadLogRow {
 
 export async function listDownloadLog(): Promise<{ data: DownloadLogRow[]; error: string | null }> {
   if (!supabase) return { data: [], error: "Supabase no está configurado." };
-  const [logResult, profilesResult] = await Promise.all([
-    supabase
-      .from("download_log")
-      .select("id, user_id, form_id, kind, ip, country_code, country_name, user_agent, created_at")
-      .order("created_at", { ascending: false }),
-    supabase.from("profiles").select("id, first_name, last_name, email"),
-  ]);
-  if (logResult.error) return { data: [], error: logResult.error.message };
+  const { data, error } = await supabase
+    .from("download_log")
+    .select("id, email, form_id, kind, ip, country_code, country_name, user_agent, created_at")
+    .order("created_at", { ascending: false });
+  if (error) return { data: [], error: error.message };
 
-  const profileById = new Map((profilesResult.data ?? []).map((p) => [p.id, p]));
-
-  const data = (logResult.data ?? []).map((row) => {
-    const profile = profileById.get(row.user_id);
-    const name = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ");
-    return {
+  return {
+    data: (data ?? []).map((row) => ({
       id: row.id,
-      userId: row.user_id,
-      userLabel: name || profile?.email || row.user_id,
+      userLabel: row.email ?? "—",
       formId: row.form_id,
       kind: row.kind as "pdf" | "photos_zip",
       ip: row.ip,
@@ -122,8 +113,7 @@ export async function listDownloadLog(): Promise<{ data: DownloadLogRow[]; error
       countryName: row.country_name,
       userAgent: row.user_agent,
       createdAt: row.created_at,
-    };
-  });
-
-  return { data, error: null };
+    })),
+    error: null,
+  };
 }
