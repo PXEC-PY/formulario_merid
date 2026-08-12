@@ -34,13 +34,22 @@ export function ReviewStep({ formTitle, status, url, error, onGenerate, schema, 
           Revisá cuidadosamente la información antes de generar el documento.
         </p>
       </div>
-      <PdfExportButton status={status} url={url} error={error} fileName={fileName} onGenerate={onGenerate} onDownload={onDownload} />
+      <PdfExportButton
+        status={status}
+        url={url}
+        error={error}
+        fileName={fileName}
+        formId={schema.id}
+        onGenerate={onGenerate}
+        onDownload={onDownload}
+      />
       {hasPhotos && (
         <PhotosZipButton
           status={zip.status}
           url={zip.blobUrl}
           error={zip.error}
           fileName={`${slug}-fotos.zip`}
+          formId={schema.id}
           onGenerate={() => zip.generate(data)}
           onDownload={onDownload}
         />

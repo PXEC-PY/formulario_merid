@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
 import { createDepartment, deleteDepartment, listDepartments, renameDepartment } from "../../hooks/useAdmin";
+import { AdminNav } from "../../components/admin/AdminNav";
 import type { Department } from "../../types/roles";
 import { baseInputClasses } from "../../components/fields/FieldWrapper";
 
@@ -65,12 +65,8 @@ export function DepartmentsPage() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-10 sm:px-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">Departamentos</h1>
-        <Link to="/admin/usuarios" className="text-sm text-brand-700 hover:underline">
-          ← Volver a usuarios
-        </Link>
-      </div>
+      <h1 className="text-2xl font-bold text-slate-900">Administración</h1>
+      <AdminNav />
 
       {error && <p className="text-sm text-red-600">✗ {error}</p>}
 

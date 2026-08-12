@@ -1,17 +1,19 @@
 import type { PdfGenerationStatus } from "../../hooks/usePdfGeneration";
+import { GatedDownloadLink } from "./GatedDownloadLink";
 
 interface PdfExportButtonProps {
   status: PdfGenerationStatus;
   url: string | null;
   error: string | null;
   fileName: string;
+  formId: string;
   onGenerate: () => void;
   /** Fired when the user actually clicks the download link — the "I'm done with this
    * submission" signal used to clear the autosaved draft. */
   onDownload?: () => void;
 }
 
-export function PdfExportButton({ status, url, error, fileName, onGenerate, onDownload }: PdfExportButtonProps) {
+export function PdfExportButton({ status, url, error, fileName, formId, onGenerate, onDownload }: PdfExportButtonProps) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-3 sm:flex-row">
@@ -24,14 +26,15 @@ export function PdfExportButton({ status, url, error, fileName, onGenerate, onDo
           {status === "loading" ? "Generando PDF..." : url ? "Regenerar PDF" : "Generar PDF"}
         </button>
         {url && status === "ready" && (
-          <a
+          <GatedDownloadLink
             href={url}
-            download={fileName}
-            onClick={onDownload}
+            fileName={fileName}
+            onAuthorizedDownload={onDownload}
+            logMeta={{ formId, kind: "pdf" }}
             className="flex min-h-12 flex-1 items-center justify-center rounded-lg border-2 border-brand-600 px-6 text-base font-semibold text-brand-700 transition-colors hover:bg-brand-50 sm:flex-none"
           >
             Descargar PDF
-          </a>
+          </GatedDownloadLink>
         )}
       </div>
       {status === "error" && error && (

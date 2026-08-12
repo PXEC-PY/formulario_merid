@@ -1,10 +1,12 @@
 import type { PhotosZipStatus } from "../../hooks/usePhotosZip";
+import { GatedDownloadLink } from "./GatedDownloadLink";
 
 interface PhotosZipButtonProps {
   status: PhotosZipStatus;
   url: string | null;
   error: string | null;
   fileName: string;
+  formId: string;
   onGenerate: () => void;
   /** Fired when the user actually clicks the download link — the "I'm done with this
    * submission" signal used to clear the autosaved draft. */
@@ -13,7 +15,7 @@ interface PhotosZipButtonProps {
 
 /** Same visual language as PdfExportButton — generates on click (see usePhotosZip) rather
  * than being kept in sync automatically like the PDF preview. */
-export function PhotosZipButton({ status, url, error, fileName, onGenerate, onDownload }: PhotosZipButtonProps) {
+export function PhotosZipButton({ status, url, error, fileName, formId, onGenerate, onDownload }: PhotosZipButtonProps) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-3 sm:flex-row">
@@ -26,14 +28,15 @@ export function PhotosZipButton({ status, url, error, fileName, onGenerate, onDo
           {status === "loading" ? "Preparando fotos..." : url ? "Regenerar .zip de fotos" : "Preparar fotos (.zip)"}
         </button>
         {url && status === "ready" && (
-          <a
+          <GatedDownloadLink
             href={url}
-            download={fileName}
-            onClick={onDownload}
+            fileName={fileName}
+            onAuthorizedDownload={onDownload}
+            logMeta={{ formId, kind: "photos_zip" }}
             className="flex min-h-12 flex-1 items-center justify-center rounded-lg border-2 border-brand-600 px-6 text-base font-semibold text-brand-700 transition-colors hover:bg-brand-50 sm:flex-none"
           >
             Descargar fotos (.zip)
-          </a>
+          </GatedDownloadLink>
         )}
       </div>
       {status === "error" && error && (

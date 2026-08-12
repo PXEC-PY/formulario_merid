@@ -14,55 +14,21 @@ import { AuthCallbackPage } from "./pages/auth/AuthCallbackPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { UsersPage } from "./pages/admin/UsersPage";
 import { DepartmentsPage } from "./pages/admin/DepartmentsPage";
+import { DownloadsPage } from "./pages/admin/DownloadsPage";
 import { RequireAuth } from "./components/auth/RequireAuth";
 import { RequireRole } from "./components/auth/RequireRole";
-import { ADMIN_ROLES, STAFF_ROLES } from "./types/roles";
+import { ADMIN_ROLES } from "./types/roles";
 
 function App() {
   return (
     <AppShell>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route
-          path="/personas-fisicas"
-          element={
-            <RequireRole roles={STAFF_ROLES}>
-              <PersonasFisicasPage />
-            </RequireRole>
-          }
-        />
-        <Route
-          path="/denuncia/riesgos-varios"
-          element={
-            <RequireRole roles={STAFF_ROLES}>
-              <DenunciaRiesgosVariosPage />
-            </RequireRole>
-          }
-        />
-        <Route
-          path="/denuncia/transporte"
-          element={
-            <RequireRole roles={STAFF_ROLES}>
-              <DenunciaTransportePage />
-            </RequireRole>
-          }
-        />
-        <Route
-          path="/denuncia/automovil"
-          element={
-            <RequireRole roles={STAFF_ROLES}>
-              <DenunciaAutomovilPage />
-            </RequireRole>
-          }
-        />
-        <Route
-          path="/revision-automovil"
-          element={
-            <RequireRole roles={STAFF_ROLES}>
-              <RevisionAutomovilPage />
-            </RequireRole>
-          }
-        />
+        <Route path="/personas-fisicas" element={<PersonasFisicasPage />} />
+        <Route path="/denuncia/riesgos-varios" element={<DenunciaRiesgosVariosPage />} />
+        <Route path="/denuncia/transporte" element={<DenunciaTransportePage />} />
+        <Route path="/denuncia/automovil" element={<DenunciaAutomovilPage />} />
+        <Route path="/revision-automovil" element={<RevisionAutomovilPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -89,6 +55,14 @@ function App() {
           element={
             <RequireRole roles={ADMIN_ROLES}>
               <DepartmentsPage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/admin/descargas"
+          element={
+            <RequireRole roles={ADMIN_ROLES}>
+              <DownloadsPage />
             </RequireRole>
           }
         />
