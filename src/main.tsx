@@ -4,6 +4,11 @@ import { HashRouter } from 'react-router-dom'
 import 'leaflet/dist/leaflet.css'
 import './index.css'
 import App from './App.tsx'
+import { checkSupabaseConnection } from './services/supabase'
+
+// Temporary — confirms the Supabase env vars made it into this build (console-only, no
+// UI). Safe to remove once the real panel starts reading actual tables.
+void checkSupabaseConnection()
 
 // HashRouter (not BrowserRouter): GitHub Pages serves static files with no server-side
 // rewrite rules, so a direct link or refresh on "/personas-fisicas" would 404. Hash-based
