@@ -115,6 +115,8 @@ export interface FormSchema {
     | "denuncia-transporte"
     | "denuncia-automovil"
     | "denuncia-incendio"
+    | "denuncia-cristales"
+    | "denuncia-robo"
     | "revision-automovil";
   title: string;
   shortDescription: string;

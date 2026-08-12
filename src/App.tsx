@@ -4,6 +4,8 @@ import { Home } from "./pages/Home";
 import { PersonasFisicasPage } from "./pages/forms/PersonasFisicasPage";
 import { DenunciaRiesgosVariosPage } from "./pages/forms/DenunciaRiesgosVariosPage";
 import { DenunciaIncendioPage } from "./pages/forms/DenunciaIncendioPage";
+import { DenunciaCristalesPage } from "./pages/forms/DenunciaCristalesPage";
+import { DenunciaRoboPage } from "./pages/forms/DenunciaRoboPage";
 import { DenunciaTransportePage } from "./pages/forms/DenunciaTransportePage";
 import { DenunciaAutomovilPage } from "./pages/forms/DenunciaAutomovilPage";
 import { RevisionAutomovilPage } from "./pages/forms/RevisionAutomovilPage";
@@ -28,6 +30,8 @@ function App() {
         <Route path="/personas-fisicas" element={<PersonasFisicasPage />} />
         <Route path="/denuncia/riesgos-varios" element={<DenunciaRiesgosVariosPage />} />
         <Route path="/denuncia/incendio" element={<DenunciaIncendioPage />} />
+        <Route path="/denuncia/cristales" element={<DenunciaCristalesPage />} />
+        <Route path="/denuncia/robo" element={<DenunciaRoboPage />} />
         <Route path="/denuncia/transporte" element={<DenunciaTransportePage />} />
         <Route path="/denuncia/automovil" element={<DenunciaAutomovilPage />} />
         <Route path="/revision-automovil" element={<RevisionAutomovilPage />} />

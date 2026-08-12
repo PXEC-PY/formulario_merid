@@ -2,13 +2,21 @@ import type { FormSchema } from "../types/schema";
 import type { DenunciaCoordinateMap } from "./coordinates/denunciaCoordinateMap";
 
 export interface BuildDenunciaSchemaOptions {
-  id: "denuncia-riesgos-varios" | "denuncia-transporte" | "denuncia-incendio";
+  id: "denuncia-riesgos-varios" | "denuncia-transporte" | "denuncia-incendio" | "denuncia-cristales" | "denuncia-robo";
   title: string;
   shortDescription: string;
+  /** Ignored when `circunstanciasLabel` is provided. */
   riesgoLabel: string;
+  /** Full override for the "Circunstancias..." label — most forms share the same
+   * sentence structure (see below) and only need `riesgoLabel`, but some (e.g. Robo y
+   * Riesgos Similares) phrase it differently altogether. */
+  circunstanciasLabel?: string;
   testigosLabel: string;
   templateAsset: string;
   coords: DenunciaCoordinateMap;
+  /** Some forms (e.g. Cristales, Vidrios y Espejos) have no "Daños a terceros" section
+   * at all. Defaults to true. */
+  hasDanosATerceros?: boolean;
 }
 
 const CIRCUNSTANCIAS_MAX_LENGTH = 1000;
@@ -20,7 +28,17 @@ const TESTIGOS_MAX_LENGTH = 400;
  * Each caller only supplies the section subtitle, the 2 label words that differ, its own
  * template PDF and its own (separately calibrated) coordinate map. */
 export function buildDenunciaSchema(opts: BuildDenunciaSchemaOptions): FormSchema {
-  const { id, title, shortDescription, riesgoLabel, testigosLabel, templateAsset, coords: C } = opts;
+  const {
+    id,
+    title,
+    shortDescription,
+    riesgoLabel,
+    circunstanciasLabel,
+    testigosLabel,
+    templateAsset,
+    coords: C,
+    hasDanosATerceros = true,
+  } = opts;
 
   return {
     id,
@@ -96,7 +114,9 @@ export function buildDenunciaSchema(opts: BuildDenunciaSchemaOptions): FormSchem
           },
           {
             name: "circunstancias",
-            label: `Circunstancias en que se produjo el siniestro y daños sufridos por el/los ${riesgoLabel} (si es necesario, agregue hojas complementarias)`,
+            label:
+              circunstanciasLabel ??
+              `Circunstancias en que se produjo el siniestro y daños sufridos por el/los ${riesgoLabel} (si es necesario, agregue hojas complementarias)`,
             type: "textarea",
             maxLength: CIRCUNSTANCIAS_MAX_LENGTH,
             rules: [
@@ -107,27 +127,31 @@ export function buildDenunciaSchema(opts: BuildDenunciaSchemaOptions): FormSchem
           },
         ],
       },
-      {
-        id: "danos",
-        title: "Daños",
-        fields: [
-          {
-            name: "danosATerceros",
-            label: "¿Daños a terceros?",
-            type: "radio-yesno",
-            rules: [{ type: "required", message: "Seleccione una opción" }],
-            pdf: C.danosATerceros,
-          },
-          {
-            name: "breveDescripcionDanos",
-            label: "Breve descripción de los daños materiales y/o personales",
-            type: "textarea",
-            maxLength: DANOS_MAX_LENGTH,
-            rules: [{ type: "maxLength", value: DANOS_MAX_LENGTH, message: `Máximo ${DANOS_MAX_LENGTH} caracteres` }],
-            pdf: C.breveDescripcionDanos,
-          },
-        ],
-      },
+      ...(hasDanosATerceros
+        ? [
+            {
+              id: "danos",
+              title: "Daños",
+              fields: [
+                {
+                  name: "danosATerceros",
+                  label: "¿Daños a terceros?",
+                  type: "radio-yesno" as const,
+                  rules: [{ type: "required" as const, message: "Seleccione una opción" }],
+                  pdf: C.danosATerceros,
+                },
+                {
+                  name: "breveDescripcionDanos",
+                  label: "Breve descripción de los daños materiales y/o personales",
+                  type: "textarea" as const,
+                  maxLength: DANOS_MAX_LENGTH,
+                  rules: [{ type: "maxLength" as const, value: DANOS_MAX_LENGTH, message: `Máximo ${DANOS_MAX_LENGTH} caracteres` }],
+                  pdf: C.breveDescripcionDanos,
+                },
+              ],
+            },
+          ]
+        : []),
       {
         id: "autoridad-policial",
         title: "Autoridad Policial",

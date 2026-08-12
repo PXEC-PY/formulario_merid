@@ -15,8 +15,10 @@ export interface DenunciaCoordinateMap {
   fechaSiniestro: [PdfBinding, PdfBinding, PdfBinding];
   horaSiniestro: [PdfBinding, PdfBinding];
   circunstancias: PdfBinding;
-  danosATerceros: [PdfBinding, PdfBinding];
-  breveDescripcionDanos: PdfBinding;
+  // Absent on forms with no "Daños a terceros" section (e.g. Cristales, Vidrios y
+  // Espejos) — see BuildDenunciaSchemaOptions.hasDanosATerceros.
+  danosATerceros?: [PdfBinding, PdfBinding];
+  breveDescripcionDanos?: PdfBinding;
   autoridadPolicial: [PdfBinding, PdfBinding];
   testigos: [PdfBinding, PdfBinding];
   datosTestigos: PdfBinding;

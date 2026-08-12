@@ -29,6 +29,18 @@ const FORM_CARDS: FormCardInfo[] = [
     description: "Reporte un siniestro de incendio y riesgos aliados con todos sus detalles.",
   },
   {
+    to: "/denuncia/cristales",
+    icon: "🪟",
+    title: "Denuncia — Cristales, Vidrios y Espejos",
+    description: "Reporte un siniestro de cristales, vidrios y espejos con todos sus detalles.",
+  },
+  {
+    to: "/denuncia/robo",
+    icon: "🕵️",
+    title: "Denuncia — Robo y Riesgos Similares",
+    description: "Reporte un siniestro de robo y riesgos similares con todos sus detalles.",
+  },
+  {
     to: "/denuncia/transporte",
     icon: "🚚",
     title: "Denuncia — Transporte de Mercaderías",
