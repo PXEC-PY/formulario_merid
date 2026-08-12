@@ -1,9 +1,13 @@
-/** Mirrors the `public.profiles` table (supabase/migrations/0001_profiles.sql) — no
- * role/department fields yet, those arrive in Fase 2 once that table grows a `role`
- * column and departments exist. */
+import type { Role } from "./roles";
+
+/** Mirrors the `public.profiles` table (supabase/migrations/0001_profiles.sql +
+ * 0002_roles.sql). */
 export interface Profile {
   id: string;
   firstName: string | null;
   lastName: string | null;
   createdAt: string;
+  role: Role;
+  departmentId: string | null;
+  email: string | null;
 }

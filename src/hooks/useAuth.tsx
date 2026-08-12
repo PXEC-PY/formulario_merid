@@ -25,8 +25,26 @@ function redirectTo(path: string): string {
   return `${window.location.origin}${window.location.pathname}#${path}`;
 }
 
-function toProfile(row: { id: string; first_name: string | null; last_name: string | null; created_at: string }): Profile {
-  return { id: row.id, firstName: row.first_name, lastName: row.last_name, createdAt: row.created_at };
+interface ProfileRow {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  created_at: string;
+  role: Profile["role"];
+  department_id: string | null;
+  email: string | null;
+}
+
+function toProfile(row: ProfileRow): Profile {
+  return {
+    id: row.id,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    createdAt: row.created_at,
+    role: row.role,
+    departmentId: row.department_id,
+    email: row.email,
+  };
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -36,7 +54,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadProfile = async (userId: string) => {
     if (!supabase) return;
-    const { data } = await supabase.from("profiles").select("id, first_name, last_name, created_at").eq("id", userId).single();
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, first_name, last_name, created_at, role, department_id, email")
+      .eq("id", userId)
+      .single();
     if (data) setProfile(toProfile(data));
   };
 

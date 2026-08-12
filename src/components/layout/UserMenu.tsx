@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { isAdminRole } from "../../utils/roles";
 
 export function UserMenu() {
   const { user, profile, loading, signOut } = useAuth();
@@ -56,6 +57,15 @@ export function UserMenu() {
           >
             Mi perfil
           </Link>
+          {isAdminRole(profile?.role) && (
+            <Link
+              to="/admin/usuarios"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+            >
+              Administración
+            </Link>
+          )}
           <button
             type="button"
             onClick={handleSignOut}

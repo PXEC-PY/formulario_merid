@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { translateAuthError } from "../../services/authErrors";
 import { AuthCard } from "./AuthCard";
@@ -8,6 +8,8 @@ import { baseInputClasses } from "../../components/fields/FieldWrapper";
 export function LoginPage() {
   const { signIn, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? "/";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +25,7 @@ export function LoginPage() {
       setError(translateAuthError(signInError));
       return;
     }
-    navigate("/");
+    navigate(from);
   };
 
   return (

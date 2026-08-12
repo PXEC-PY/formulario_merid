@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { canAccessForms, isAdminRole } from "../utils/roles";
 
 interface FormCardInfo {
   to: string;
@@ -41,34 +43,69 @@ const FORM_CARDS: FormCardInfo[] = [
 ];
 
 export function Home() {
+  const { user, profile, loading } = useAuth();
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">Formularios Digitales</h1>
         <p className="mt-2 text-slate-600">Elegí el formulario que necesitás completar.</p>
       </div>
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {FORM_CARDS.map((card) => (
-          <div
-            key={card.to}
-            className="flex flex-col justify-between gap-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
-          >
-            <div>
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-brand-50 text-2xl">
-                {card.icon}
+
+      {loading ? null : !user ? (
+        <p className="text-sm text-slate-600">
+          <Link to="/login" className="text-brand-700 hover:underline">
+            Iniciá sesión
+          </Link>{" "}
+          para ver los formularios disponibles.
+        </p>
+      ) : (
+        <>
+          {isAdminRole(profile?.role) && (
+            <div className="mb-6 flex flex-col justify-between gap-4 rounded-xl border border-brand-200 bg-brand-50 p-6 sm:flex-row sm:items-center">
+              <div>
+                <h2 className="text-base font-semibold text-slate-900">Administración</h2>
+                <p className="mt-1 text-sm text-slate-600">Gestioná usuarios, roles y departamentos.</p>
               </div>
-              <h2 className="text-base font-semibold text-slate-900">{card.title}</h2>
-              <p className="mt-1.5 text-sm text-slate-600">{card.description}</p>
+              <Link
+                to="/admin/usuarios"
+                className="flex min-h-11 items-center justify-center rounded-lg bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+              >
+                Ir al panel
+              </Link>
             </div>
-            <Link
-              to={card.to}
-              className="flex min-h-11 items-center justify-center rounded-lg bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-            >
-              Completar formulario
-            </Link>
-          </div>
-        ))}
-      </div>
+          )}
+
+          {canAccessForms(profile?.role) ? (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {FORM_CARDS.map((card) => (
+                <div
+                  key={card.to}
+                  className="flex flex-col justify-between gap-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+                >
+                  <div>
+                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-brand-50 text-2xl">
+                      {card.icon}
+                    </div>
+                    <h2 className="text-base font-semibold text-slate-900">{card.title}</h2>
+                    <p className="mt-1.5 text-sm text-slate-600">{card.description}</p>
+                  </div>
+                  <Link
+                    to={card.to}
+                    className="flex min-h-11 items-center justify-center rounded-lg bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+                  >
+                    Completar formulario
+                  </Link>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-600">
+              No tenés formularios asignados. Si crees que esto es un error, contactá a un administrador.
+            </p>
+          )}
+        </>
+      )}
     </div>
   );
 }
