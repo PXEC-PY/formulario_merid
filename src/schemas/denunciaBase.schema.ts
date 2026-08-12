@@ -43,10 +43,7 @@ export function buildDenunciaSchema(opts: BuildDenunciaSchemaOptions): FormSchem
             name: "ci",
             label: "C.I.",
             type: "text",
-            rules: [
-              { type: "required", message: "Ingrese el número de C.I." },
-              { type: "ci", message: "Ingrese un número de C.I. válido" },
-            ],
+            rules: [{ type: "ci", message: "Ingrese un número de C.I. válido" }],
             pdf: C.ci,
           },
           { name: "ruc", label: "RUC", type: "text", rules: [{ type: "ruc", message: "Ingrese un RUC válido" }], pdf: C.ruc },

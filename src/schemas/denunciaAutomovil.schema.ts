@@ -27,10 +27,7 @@ export const denunciaAutomovilSchema: FormSchema = {
           name: "ci",
           label: "C.I.",
           type: "text",
-          rules: [
-            { type: "required", message: "Ingrese el número de C.I." },
-            { type: "ci", message: "Ingrese un número de C.I. válido" },
-          ],
+          rules: [{ type: "ci", message: "Ingrese un número de C.I. válido" }],
           acroField: "CI",
           acroMaxWidth: 72,
         },

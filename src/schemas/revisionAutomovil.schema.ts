@@ -266,6 +266,7 @@ export const revisionAutomovilSchema: FormSchema = {
             { key: "carpaMaritimaRigida", label: "Carpa marítima o rígida" },
             { key: "tiraTrailer", label: "Tiratrailer" },
             { key: "antivuelco", label: "Antivuelco" },
+            { key: "llanta", label: "Llanta" },
             { key: "otrosAccesorios", label: "Otros" },
           ],
         },
