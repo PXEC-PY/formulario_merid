@@ -23,6 +23,12 @@ const FORM_CARDS: FormCardInfo[] = [
     description: "Reporte un siniestro de riesgos varios con todos sus detalles.",
   },
   {
+    to: "/denuncia/incendio",
+    icon: "🔥",
+    title: "Denuncia — Incendio y Aliados",
+    description: "Reporte un siniestro de incendio y riesgos aliados con todos sus detalles.",
+  },
+  {
     to: "/denuncia/transporte",
     icon: "🚚",
     title: "Denuncia — Transporte de Mercaderías",

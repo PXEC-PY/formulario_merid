@@ -2,7 +2,7 @@ import type { FormSchema } from "../types/schema";
 import type { DenunciaCoordinateMap } from "./coordinates/denunciaCoordinateMap";
 
 export interface BuildDenunciaSchemaOptions {
-  id: "denuncia-riesgos-varios" | "denuncia-transporte";
+  id: "denuncia-riesgos-varios" | "denuncia-transporte" | "denuncia-incendio";
   title: string;
   shortDescription: string;
   riesgoLabel: string;

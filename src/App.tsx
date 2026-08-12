@@ -3,6 +3,7 @@ import { AppShell } from "./components/layout/AppShell";
 import { Home } from "./pages/Home";
 import { PersonasFisicasPage } from "./pages/forms/PersonasFisicasPage";
 import { DenunciaRiesgosVariosPage } from "./pages/forms/DenunciaRiesgosVariosPage";
+import { DenunciaIncendioPage } from "./pages/forms/DenunciaIncendioPage";
 import { DenunciaTransportePage } from "./pages/forms/DenunciaTransportePage";
 import { DenunciaAutomovilPage } from "./pages/forms/DenunciaAutomovilPage";
 import { RevisionAutomovilPage } from "./pages/forms/RevisionAutomovilPage";
@@ -26,6 +27,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/personas-fisicas" element={<PersonasFisicasPage />} />
         <Route path="/denuncia/riesgos-varios" element={<DenunciaRiesgosVariosPage />} />
+        <Route path="/denuncia/incendio" element={<DenunciaIncendioPage />} />
         <Route path="/denuncia/transporte" element={<DenunciaTransportePage />} />
         <Route path="/denuncia/automovil" element={<DenunciaAutomovilPage />} />
         <Route path="/revision-automovil" element={<RevisionAutomovilPage />} />

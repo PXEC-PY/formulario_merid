@@ -109,7 +109,13 @@ export interface InternalUseRow {
 }
 
 export interface FormSchema {
-  id: "personas-fisicas" | "denuncia-riesgos-varios" | "denuncia-transporte" | "denuncia-automovil" | "revision-automovil";
+  id:
+    | "personas-fisicas"
+    | "denuncia-riesgos-varios"
+    | "denuncia-transporte"
+    | "denuncia-automovil"
+    | "denuncia-incendio"
+    | "revision-automovil";
   title: string;
   shortDescription: string;
   /** Not used by `pdfStrategy: "generated"`, which has no official template to embed. */
