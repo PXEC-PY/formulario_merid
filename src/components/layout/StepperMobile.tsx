@@ -19,6 +19,7 @@ interface StepperMobileProps {
   pdfUrl: string | null;
   pdfError: string | null;
   onGeneratePdf: () => void;
+  onDownload?: () => void;
 }
 
 /** Google-Forms-style single-column flow: one section per screen, big touch targets,
@@ -35,6 +36,7 @@ export function StepperMobile({
   pdfUrl,
   pdfError,
   onGeneratePdf,
+  onDownload,
 }: StepperMobileProps) {
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5 px-4 py-6 sm:px-6">
@@ -53,6 +55,7 @@ export function StepperMobile({
               onGenerate={onGeneratePdf}
               schema={schema}
               data={wizard.data}
+              onDownload={onDownload}
             />
             <PdfPreview url={pdfUrl} isLoading={pdfStatus === "loading"} />
           </div>

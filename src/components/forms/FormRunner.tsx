@@ -54,6 +54,7 @@ export function FormRunner({ schema }: { schema: FormSchema }) {
     pdfUrl: pdf.blobUrl,
     pdfError: pdf.error,
     onGeneratePdf: () => pdf.generate(wizard.data),
+    onDownload: wizard.clearDraft,
   };
 
   return isDesktop ? <SplitPaneDesktop {...shared} /> : <StepperMobile {...shared} />;

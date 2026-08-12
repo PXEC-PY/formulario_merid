@@ -6,9 +6,12 @@ interface PdfExportButtonProps {
   error: string | null;
   fileName: string;
   onGenerate: () => void;
+  /** Fired when the user actually clicks the download link — the "I'm done with this
+   * submission" signal used to clear the autosaved draft. */
+  onDownload?: () => void;
 }
 
-export function PdfExportButton({ status, url, error, fileName, onGenerate }: PdfExportButtonProps) {
+export function PdfExportButton({ status, url, error, fileName, onGenerate, onDownload }: PdfExportButtonProps) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-3 sm:flex-row">
@@ -24,6 +27,7 @@ export function PdfExportButton({ status, url, error, fileName, onGenerate }: Pd
           <a
             href={url}
             download={fileName}
+            onClick={onDownload}
             className="flex min-h-12 flex-1 items-center justify-center rounded-lg border-2 border-brand-600 px-6 text-base font-semibold text-brand-700 transition-colors hover:bg-brand-50 sm:flex-none"
           >
             Descargar PDF

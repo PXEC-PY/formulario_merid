@@ -1,12 +1,30 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormSchema } from "../types/schema";
 import type { FormData, FormFieldValue } from "../types/formData";
 import { validateSection, validateForm } from "../services/validation/validateSection";
+import { loadDraft, saveDraft, clearDraft as clearDraftStorage } from "../utils/formPersistence";
+
+const SAVE_DEBOUNCE_MS = 400;
 
 export function useFormWizard(schema: FormSchema) {
-  const [data, setData] = useState<FormData>({});
-  const [sectionIndex, setSectionIndex] = useState(0);
+  // Only read the saved draft once per form (not on every render) — schema.id is stable
+  // for the lifetime of a page, so this only re-runs if the user navigates to a
+  // different form while this component stays mounted (it won't, but cheap to be safe).
+  const draft = useMemo(() => loadDraft(schema.id), [schema.id]);
+  const [data, setData] = useState<FormData>(draft?.data ?? {});
+  const [sectionIndex, setSectionIndex] = useState(() =>
+    Math.min(Math.max(0, draft?.sectionIndex ?? 0), schema.sections.length - 1)
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const saveTimeoutRef = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    window.clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = window.setTimeout(() => {
+      saveDraft(schema.id, { data, sectionIndex });
+    }, SAVE_DEBOUNCE_MS);
+    return () => window.clearTimeout(saveTimeoutRef.current);
+  }, [schema.id, data, sectionIndex]);
 
   const section = schema.sections[sectionIndex];
   const isFirstSection = sectionIndex === 0;
@@ -58,6 +76,9 @@ export function useFormWizard(schema: FormSchema) {
     progress,
     validateAll,
     totalSections: schema.sections.length,
+    // Called once the user has actually downloaded the PDF/zip — that's the "I'm done
+    // with this submission" signal, not just navigating away or reloading.
+    clearDraft: () => clearDraftStorage(schema.id),
   };
 }
 

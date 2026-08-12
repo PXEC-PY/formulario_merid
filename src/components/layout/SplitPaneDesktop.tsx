@@ -19,6 +19,7 @@ interface SplitPaneDesktopProps {
   pdfUrl: string | null;
   pdfError: string | null;
   onGeneratePdf: () => void;
+  onDownload?: () => void;
 }
 
 /** Editable form on the left, live PDF preview on the right, updated as the user types
@@ -35,6 +36,7 @@ export function SplitPaneDesktop({
   pdfUrl,
   pdfError,
   onGeneratePdf,
+  onDownload,
 }: SplitPaneDesktopProps) {
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
@@ -55,6 +57,7 @@ export function SplitPaneDesktop({
               onGenerate={onGeneratePdf}
               schema={schema}
               data={wizard.data}
+              onDownload={onDownload}
             />
           )}
           <FormNavigation

@@ -13,9 +13,12 @@ interface ReviewStepProps {
   onGenerate: () => void;
   schema: FormSchema;
   data: FormData;
+  /** Fired once the user actually downloads the PDF or the photos zip — clears the
+   * autosaved draft for this form (see useFormWizard's clearDraft). */
+  onDownload?: () => void;
 }
 
-export function ReviewStep({ formTitle, status, url, error, onGenerate, schema, data }: ReviewStepProps) {
+export function ReviewStep({ formTitle, status, url, error, onGenerate, schema, data, onDownload }: ReviewStepProps) {
   const slug = formTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-");
   const fileName = `${slug}.pdf`;
   const zip = usePhotosZip(schema);
@@ -31,7 +34,7 @@ export function ReviewStep({ formTitle, status, url, error, onGenerate, schema, 
           Revisá cuidadosamente la información antes de generar el documento.
         </p>
       </div>
-      <PdfExportButton status={status} url={url} error={error} fileName={fileName} onGenerate={onGenerate} />
+      <PdfExportButton status={status} url={url} error={error} fileName={fileName} onGenerate={onGenerate} onDownload={onDownload} />
       {hasPhotos && (
         <PhotosZipButton
           status={zip.status}
@@ -39,6 +42,7 @@ export function ReviewStep({ formTitle, status, url, error, onGenerate, schema, 
           error={zip.error}
           fileName={`${slug}-fotos.zip`}
           onGenerate={() => zip.generate(data)}
+          onDownload={onDownload}
         />
       )}
     </div>
