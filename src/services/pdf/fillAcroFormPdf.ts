@@ -5,7 +5,7 @@ import { loadTemplateBytes } from "./embedTemplate";
 import { drawField, type PdfFonts } from "./drawField";
 import { isFieldVisible } from "../../utils/fieldVisibility";
 import { formatIsoDateToDisplay } from "../../utils/dateFormat";
-import { computeFittingFontSize, truncateToWidth, wrapText } from "../../utils/text";
+import { computeFittingFontSize, fitTextToBox, truncateToWidth, wrapText } from "../../utils/text";
 
 const ACRO_FONT_SIZE = 10;
 const ACRO_MIN_FONT_SIZE = 6;
@@ -85,11 +85,30 @@ export async function fillAcroFormPdf(schema: FormSchema, data: FormData): Promi
         if (text) {
           const textField = form.getTextField(field.acroField);
           const maxWidth = field.acroMaxWidth;
-          const size = maxWidth
-            ? computeFittingFontSize(text, maxWidth, (s, sz) => regular.widthOfTextAtSize(s, sz), ACRO_FONT_SIZE, ACRO_MIN_FONT_SIZE)
-            : ACRO_FONT_SIZE;
-          const renderText = maxWidth ? truncateToWidth(text, maxWidth, (s) => regular.widthOfTextAtSize(s, size)) : text;
-          setFieldText(textField, renderText, size, field.acroMultiline);
+
+          if (field.acroMultiline) {
+            // Word-wrap across the field's actual height instead of single-line-truncating —
+            // a multiline AcroForm field (e.g. "Circunstancias", "Daños sufridos...") is a real
+            // multi-row box on the printed template, not a single wide line.
+            const rect = textField.acroField.getWidgets()[0]?.getRectangle();
+            const width = maxWidth ?? rect?.width ?? 400;
+            const height = rect?.height ?? 40;
+            const { lines, fontSize } = fitTextToBox(
+              text,
+              width,
+              height,
+              (s, sz) => regular.widthOfTextAtSize(s, sz),
+              ACRO_FONT_SIZE,
+              ACRO_MIN_FONT_SIZE
+            );
+            setFieldText(textField, lines.join("\n"), fontSize, true);
+          } else {
+            const size = maxWidth
+              ? computeFittingFontSize(text, maxWidth, (s, sz) => regular.widthOfTextAtSize(s, sz), ACRO_FONT_SIZE, ACRO_MIN_FONT_SIZE)
+              : ACRO_FONT_SIZE;
+            const renderText = maxWidth ? truncateToWidth(text, maxWidth, (s) => regular.widthOfTextAtSize(s, size)) : text;
+            setFieldText(textField, renderText, size);
+          }
         }
       }
 

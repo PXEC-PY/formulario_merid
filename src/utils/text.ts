@@ -69,3 +69,34 @@ export function truncateToWidth(text: string, maxWidth: number, measure: (text: 
   }
   return truncated.length < text.length ? `${truncated}...` : truncated;
 }
+
+/** Wraps `text` into lines fitting `maxWidth`, shrinking the font step by step (down to
+ * `minSize`) to fit the line budget implied by `maxHeight` at the *starting* font size, then
+ * truncates any lines still left over. Shared by the manual-coordinate box renderer and the
+ * AcroForm multiline filler so a free-text box never overflows its printed border either way. */
+export function fitTextToBox(
+  text: string,
+  maxWidth: number,
+  maxHeight: number,
+  measure: (text: string, size: number) => number,
+  defaultSize: number,
+  minSize: number
+): { lines: string[]; fontSize: number } {
+  let fontSize = defaultSize;
+  const maxLines = Math.max(1, Math.floor(maxHeight / (fontSize * 1.2)));
+
+  let lines = wrapText(text, maxWidth, (s) => measure(s, fontSize));
+  while (lines.length > maxLines && fontSize > minSize) {
+    fontSize -= 0.5;
+    lines = wrapText(text, maxWidth, (s) => measure(s, fontSize));
+  }
+
+  if (lines.length > maxLines) {
+    const visible = lines.slice(0, maxLines);
+    const last = visible[maxLines - 1] ?? "";
+    visible[maxLines - 1] = last.length > 3 ? `${last.slice(0, -3)}...` : last;
+    lines = visible;
+  }
+
+  return { lines, fontSize };
+}
