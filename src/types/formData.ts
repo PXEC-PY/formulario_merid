@@ -19,6 +19,11 @@ export interface ChecklistRowValue {
 /** Value shape for a 'checklist-table' field, keyed by each row's `tableRows[].key`. */
 export type ChecklistTableValue = Record<string, ChecklistRowValue>;
 
+/** Value shape for a 'checklist-matrix' field (e.g. the FR/TR/LI/LD damage grids) —
+ * keyed by each row's `tableRows[].key`, holding the list of checked `options[].value`
+ * for that row (a part can be checked in more than one column at once). */
+export type ChecklistMatrixValue = Record<string, string[]>;
+
 export type FormFieldValue =
   | string
   | boolean
@@ -26,6 +31,7 @@ export type FormFieldValue =
   | Signature
   | Photo[]
   | ChecklistTableValue
+  | ChecklistMatrixValue
   | undefined;
 
 export type FormData = Record<string, FormFieldValue>;

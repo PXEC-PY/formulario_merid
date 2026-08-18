@@ -1,5 +1,5 @@
 import type { FieldSchema } from "../../types/schema";
-import type { ChecklistTableValue, FormFieldValue, LocationValue } from "../../types/formData";
+import type { ChecklistMatrixValue, ChecklistTableValue, FormFieldValue, LocationValue } from "../../types/formData";
 import type { Signature } from "../../types/signature";
 import { isValidCi, isValidEmail, isValidPhone, isValidRuc } from "./rules";
 
@@ -21,6 +21,12 @@ function isEmpty(value: FormFieldValue): boolean {
   if (Array.isArray(value)) return value.length === 0; // Photo[]
   if (isSignature(value)) return false; // presence alone means "answered"
   if (isLocationValue(value)) return !value.label || value.label.trim().length === 0;
+  const rowValues = Object.values(value);
+  // ChecklistMatrixValue — each row holds an array of checked option values.
+  if (rowValues.every((row) => Array.isArray(row))) {
+    const matrixRows = value as ChecklistMatrixValue;
+    return !Object.values(matrixRows).some((checked) => checked.length > 0);
+  }
   // ChecklistTableValue — empty iff no row has an answer yet.
   const rows = value as ChecklistTableValue;
   return !Object.values(rows).some((row) => !!row?.option);

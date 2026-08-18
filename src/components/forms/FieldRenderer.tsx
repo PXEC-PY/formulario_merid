@@ -1,5 +1,5 @@
 import type { FieldSchema } from "../../types/schema";
-import type { ChecklistTableValue, FormData, LocationValue } from "../../types/formData";
+import type { ChecklistMatrixValue, ChecklistTableValue, FormData, LocationValue } from "../../types/formData";
 import type { HandwrittenSignature } from "../../types/signature";
 import type { Photo } from "../../types/photo";
 import { isFieldVisible } from "../../utils/fieldVisibility";
@@ -12,6 +12,7 @@ import { SelectField } from "../fields/SelectField";
 import { LocationField } from "../fields/LocationField";
 import { StaticLegalText } from "../fields/StaticLegalText";
 import { ChecklistTableField } from "../fields/ChecklistTableField";
+import { ChecklistMatrixField } from "../fields/ChecklistMatrixField";
 import { PhotoField } from "../fields/PhotoField";
 import { SignaturePad } from "../signature/SignaturePad";
 
@@ -55,6 +56,10 @@ export function FieldRenderer({ field, data, errors, onFieldChange }: FieldRende
     case "checklist-table":
       return (
         <ChecklistTableField field={field} value={value as ChecklistTableValue | undefined} onChange={onChange} error={error} />
+      );
+    case "checklist-matrix":
+      return (
+        <ChecklistMatrixField field={field} value={value as ChecklistMatrixValue | undefined} onChange={onChange} error={error} />
       );
     case "photo":
       return <PhotoField field={field} value={(value as Photo[]) ?? []} onChange={onChange} error={error} />;

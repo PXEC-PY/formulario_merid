@@ -1,11 +1,12 @@
 import type { FieldSchema, FormSchema } from "../../types/schema";
-import type { ChecklistTableValue, FormData, FormFieldValue, LocationValue } from "../../types/formData";
+import type { ChecklistMatrixValue, ChecklistTableValue, FormData, FormFieldValue, LocationValue } from "../../types/formData";
 import type { Signature } from "../../types/signature";
 import type { Photo } from "../../types/photo";
 import { isFieldVisible } from "../../utils/fieldVisibility";
 import { formatIsoDateToDisplay } from "../../utils/dateFormat";
 import { BRAND_GREEN, MARGIN, PAGE_WIDTH, PageCursor, TEXT_DARK, TEXT_GRAY } from "./pageCursor";
 import { drawChecklistTable } from "./drawChecklistTable";
+import { drawChecklistMatrix } from "./drawChecklistMatrix";
 import { appendPhotoGallery } from "./drawPhotoGallery";
 import type { LabeledPhoto } from "./drawPhotoGallery";
 import { loadTemplateBytes } from "./embedTemplate";
@@ -40,6 +41,10 @@ export async function buildGeneratedPdf(schema: FormSchema, data: FormData): Pro
       }
       if (field.type === "checklist-table") {
         drawChecklistTable(cursor, field, value as ChecklistTableValue | undefined);
+        continue;
+      }
+      if (field.type === "checklist-matrix") {
+        drawChecklistMatrix(cursor, field, value as ChecklistMatrixValue | undefined);
         continue;
       }
       if (field.type === "textarea") {

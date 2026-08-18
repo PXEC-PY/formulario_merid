@@ -11,6 +11,7 @@ export type FieldType =
   | "static-legal-text"
   | "location"
   | "checklist-table"
+  | "checklist-matrix"
   | "photo";
 
 export type RuleType =
@@ -85,9 +86,12 @@ export interface FieldSchema {
    * for "Daños sufridos" — VA_Danios1/2/3). Wrapped word-by-word to fit `acroMaxWidth`,
    * one field per resulting line; extra text beyond the last line is dropped. */
   acroFields?: string[];
-  /** Only for `type: "checklist-table"` — the rows of the table, in print order. Each
-   * row's answer (one of `options`) plus its own free-text "Observaciones" is keyed by
-   * `key` in the field's `ChecklistTableValue`. */
+  /** Only for `type: "checklist-table"` and `"checklist-matrix"` — the rows of the table,
+   * in print order. For `checklist-table` each row's answer (one of `options`) plus its
+   * own free-text "Observaciones" is keyed by `key` in the field's `ChecklistTableValue`.
+   * For `checklist-matrix` each row keys a subset of `options[].value` (multiple columns
+   * may be checked per row, e.g. a part that's both "Rayado" and "Abollado") in the
+   * field's `ChecklistMatrixValue`. */
   tableRows?: { key: string; label: string }[];
   /** Only for `type: "photo"` — max number of photos this field accepts. 1 for a single
    * named slot (e.g. "Frontal"), >1 for a multi-photo bucket (e.g. "Daños Adicionales"). */
